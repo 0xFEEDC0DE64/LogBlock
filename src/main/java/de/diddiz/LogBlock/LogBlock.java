@@ -101,11 +101,19 @@ public class LogBlock extends JavaPlugin {
                 return;
             }
             final Statement st = conn.createStatement();
-            final ResultSet rs = st.executeQuery("SHOW CHARACTER SET where charset='utf8mb4';");
-            if (rs.next()) {
-                Config.mb4 = true;
-                // Allegedly JDBC driver since 2010 hasn't needed this. I did.
-                st.executeUpdate("SET NAMES utf8mb4;");
+            try {
+                final ResultSet rs = st.executeQuery("SHOW CHARACTER SET where charset='utf8mb4';");
+                if (rs.next()) {
+                    Config.mb4 = true;
+                    // Allegedly JDBC driver since 2010 hasn't needed this. I did.
+                    try {
+                        st.executeUpdate("SET NAMES utf8mb4;");
+                    } catch (Exception ex) {
+                        getLogger().severe("could not set names to utf8mb4: " + ex.getMessage());
+                    }
+                }
+            } catch (Exception ex) {
+                getLogger().severe("could not verify character set: " + ex.getMessage());
             }
             conn.close();
             Updater updater = new Updater(this);
